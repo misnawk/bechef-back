@@ -11,7 +11,7 @@ public class WebConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")    // 모든 주소 적용됨
-                .allowedOrigins("Http://localhost:3000") // 테스트용 도메인
+                .allowedOrigins("http://localhost:3000") // 테스트용 도메인
                 .allowedOrigins("https://gentle-field-017139e00.5.azurestaticapps.net") // 배포용 도메인
                 .allowedMethods("GET", "POST", "PUT", "DELETE","OPTIONS") // HTTP request 메서드 허용
                 .allowedHeaders("*") // request의 모든 header 허용
