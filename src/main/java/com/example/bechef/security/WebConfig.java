@@ -13,7 +13,7 @@ public class WebConfig implements WebMvcConfigurer {
         registry.addMapping("/**")    // 모든 주소 적용됨
                 .allowedOriginPatterns(
                         "http://localhost:3000", // 테스트용 도메인
-                        "https://delightful-meadow-09cec9100.5.azurestaticapps.net" // 배포용 도메인
+                        "https://gentle-field-017139e00.5.azurestaticapps.net" // 배포용 도메인
                 )
 //                .allowedOrigins("http://localhost:3000") // 테스트용 도메인
 //                .allowedOrigins("https://gentle-field-017139e00.5.azurestaticapps.net") // 배포용 도메인
