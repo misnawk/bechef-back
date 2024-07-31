@@ -84,7 +84,7 @@ public class InfoController {
     //info 페이지 메뉴 불러오는곳
     @GetMapping("/info_menu/{storeId}")
     public ResponseEntity<?> getMenuInfo(@PathVariable int storeId) {
-
+        System.out.println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
         // storeId를 기반으로 메뉴 리스트를 가져옴
         List<Menu> menuList = menuService.getMenuInfoByStoreId(storeId);
 
