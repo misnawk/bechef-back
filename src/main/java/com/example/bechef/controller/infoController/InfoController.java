@@ -153,7 +153,7 @@ public class InfoController {
                     dto.setMemberIdx(review.getMemberIdx());
                     dto.setUserName(memberNameMap.getOrDefault(review.getMemberIdx(), "Unknown"));
 
-                    System.out.println("min1" + dto + "min1");
+//                    System.out.println("min1" + dto + "min1"); review DTO불러와지는 확인용
 
                     return dto;
                 })

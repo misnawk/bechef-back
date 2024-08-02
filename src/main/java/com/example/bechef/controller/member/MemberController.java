@@ -3,6 +3,7 @@ package com.example.bechef.controller.member;
 
 import com.example.bechef.dto.ApiResponse;
 import com.example.bechef.model.member.Member;
+import com.example.bechef.repository.member.MemberRepository;
 import com.example.bechef.service.member.MemberDetailServiceImpl;
 import com.example.bechef.service.member.MemberService;
 import com.example.bechef.status.ResponseStatus;
@@ -45,35 +46,62 @@ public class MemberController {
     @Autowired
     JwtUtil jwtUtil;
 
+    @Autowired
+    MemberRepository memberRepository;
+
     // API 응답을 생성하는 메서드
-    public ApiResponse<?> validateApiResponse(ResultStatus status){
-        ResponseStatus resultStatus =ResultStatus.FAIL.equals(status) ? ResponseStatus.FAIL : ResponseStatus.SUCCESS;
+    public ApiResponse<?> validateApiResponse(ResultStatus status) {
+        ResponseStatus resultStatus = ResultStatus.FAIL.equals(status) ? ResponseStatus.FAIL : ResponseStatus.SUCCESS;
         String message = ResultStatus.FAIL.equals(status) ? "실패" : "성공";
-        return new ApiResponse(resultStatus, message,null);
+        return new ApiResponse(resultStatus, message, null);
     }
 
     // 회원가입
     @PostMapping("/register")
     public ResponseEntity<ApiResponse> registerMember(@RequestBody Member member) {
+
         // 비밀번호를 암호화하여 설정
         member.setPwd(passwordEncoder.encode(member.getPwd()));
 
-        // 회원 정보 저장
-        memberService.saveUser(member);
-        ApiResponse  apiResponse = new ApiResponse(ResponseStatus.SUCCESS, "회원가입 성공", null);
-        return ResponseEntity.ok(apiResponse);
-    }
+        //아이디 공백검사
+        if (member.getId() == null || member.getId().trim().isEmpty()) {
+            throw new IllegalArgumentException("아이디는 필수입니다.");
+        }
+
+        //아이디 중복검사 and 회원가입
+        boolean isDuplicate = memberService.isIdDuplicate(member.getId());
+
+        ApiResponse apiResponse;
+        if(isDuplicate){
+            apiResponse = new ApiResponse(
+                    ResponseStatus.ERROR,
+                    "이미 사용중인 아이디입니다.",
+                    isDuplicate
+            );
+            return ResponseEntity.ok(apiResponse);
+        }else {
+            memberRepository.save(member);
+            apiResponse = new ApiResponse(
+                    ResponseStatus.SUCCESS,
+                            "사용 가능한 아이디입니다. 회원가입이 완료되었습니다.",
+                            isDuplicate
+                            );
+            return ResponseEntity.ok(apiResponse);
+        }
+}
+
+
 
     // 로그인
     @PostMapping("/login")
-    public ResponseEntity<ApiResponse<Map<String, String>>> login(@RequestBody Member member){
+    public ResponseEntity<ApiResponse<Map<String, String>>> login(@RequestBody Member member) {
 
         try {
             // 사용자 정보 로드
             UserDetails userDetails = memberDetailService.loadUserByUsername(member.getId());
 
             // 비밀번호 검증
-            if(userDetails == null || !passwordEncoder.matches(member.getPwd(), userDetails.getPassword())){
+            if (userDetails == null || !passwordEncoder.matches(member.getPwd(), userDetails.getPassword())) {
                 throw new BadCredentialsException("아이디와 비밀번호가 일치하지 않습니다.");
             }
             // 인증된 사용자 정보 조회

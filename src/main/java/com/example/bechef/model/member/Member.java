@@ -2,6 +2,7 @@ package com.example.bechef.model.member;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.antlr.v4.runtime.misc.NotNull;
 import org.hibernate.annotations.ColumnDefault;
 
 @Data
@@ -38,5 +39,4 @@ public class Member {
     @ColumnDefault("USER")
     @Enumerated(EnumType.STRING)
     private Role role;
-
 }

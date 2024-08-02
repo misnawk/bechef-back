@@ -44,6 +44,20 @@ public class MemberServiceImpl implements MemberService {
         return memberRepository.findById(id);
     }
 
+    @Override
+    public boolean isIdDuplicate(String id) {
+        return memberRepository.existsById(id);
+    }
+
+    @Override
+    public Member registerNewMember(Member member) {
+        if (isIdDuplicate(member.getId())){
+            throw new IllegalArgumentException("이미 사용중인 아이디입니다.");
+        }
+        return memberRepository.save(member);
+    }
+
+
 
 
     // Member 객체를 MemberDTO로 변환하는 메서드

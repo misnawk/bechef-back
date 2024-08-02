@@ -16,6 +16,11 @@ public interface MemberRepository extends JpaRepository<Member, Integer> {
  //로그인했을때 입력한 아이디로 사용자 정보를 가져오기위한 메서드
  Member findById(String memberId);
 
+ //회원가입 중복검사
+boolean existsById(String id);
+
  //리뷰 불러오기
  List<Member> findByIdxIn(List<Integer> IdxList);
+
+
 }
