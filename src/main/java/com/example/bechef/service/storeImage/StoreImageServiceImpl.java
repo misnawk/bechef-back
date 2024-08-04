@@ -12,6 +12,7 @@ public class StoreImageServiceImpl implements StoreImageService{
     private StoreImageRepository storeImageRepository;
 
     @Override
+    // 특정 가게 ID에 해당하는 가게 이미지를 조회하는 메서드
     public StoreImage storeImgByStoreId(int storeId) {
         return storeImageRepository.findByStoreId(storeId);
     }

@@ -43,108 +43,106 @@ public class AdminController {
     @Autowired
     private InventoryService inventoryService;
 
-
-    //관리자 페이지에 모든 멤버를 불러옴
-    @PreAuthorize("hasRole('ADMIN')")
+    // 관리자 페이지에서 관리자를 제외한 모든 멤버 데이터를 가져옴
+    @PreAuthorize("hasRole('ADMIN')") // 관리자 권한 확인
     @GetMapping("/members")
     public ResponseEntity<List<MemberDTO>> getAllMembers() {
-        logger.info("Entering getAllMembers");
+        logger.info("Entering getAllMembers"); // 메서드 진입 로그
         try {
-            List<MemberDTO> members = memberService.findAll();
-            logger.info("Retrieved {} members", members.size());
-            return ResponseEntity.ok(members);
+            List<MemberDTO> members = memberService.findAll(); // 모든 멤버 조회
+            logger.info("Retrieved {} members", members.size()); // 조회된 멤버 수 로그 기록
+            return ResponseEntity.ok(members); // 멤버 목록 반환
         } catch (Exception e) {
-            logger.error("Error retrieving members", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            logger.error("Error retrieving members", e); // 에러 로그 기록
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build(); // 서버 에러 응답
         }
     }
 
-    //멤버 삭제
+    // 멤버 삭제
     @DeleteMapping("/members/{member_idx}")
+    // 매개변수로 가져온 member_idx를 int 타입의 member_idx 객체에 담음
     public ResponseEntity<?> deleteMember(@PathVariable int member_idx) {
-        logger.info("Attempting to delete member with ID: {}", member_idx);
+        logger.info("Attempting to delete member with ID: {}", member_idx); // 삭제하려는 member_idx 확인하는 로그
         try {
-            memberService.delete(member_idx);
-            logger.info("Successfully deleted member with ID: {}", member_idx);
-            return ResponseEntity.ok("성공적으로 삭제됨");
+            memberService.delete(member_idx); // 해당 idx를 가진 멤버 삭제
+            logger.info("Successfully deleted member with ID: {}", member_idx); // 삭제 성공 로그 기록
+            return ResponseEntity.ok("성공적으로 삭제됨"); // 성공 메시지 반환
         } catch (Exception e) {
-            logger.error("Error deleting member with ID: " + member_idx, e);
+            logger.error("Error deleting member with ID: " + member_idx, e); // 에러 로그 기록
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("삭제중 오류발생: " + e.getMessage());
+                    .body("삭제 중 오류 발생: " + e.getMessage()); // 에러 메시지 반환
         }
     }
 
-    //상품등록에서 드롭박스
+    // 상품 등록에서 드롭박스를 위한 모든 가게 조회
     @GetMapping("/stores")
     public ResponseEntity<List<Store>> getAllStores() {
-        logger.info("Entering getAllStores");
+        logger.info("Entering getAllStores"); // 메서드 진입 로그
         try {
-            List<Store> stores = storeService.findAll();
-            logger.info("Retrieved {} stores", stores.size());
-            return ResponseEntity.ok(stores);
+            List<Store> stores = storeService.findAll(); // 모든 가게 조회
+            logger.info("Retrieved {} stores", stores.size()); // 조회된 가게 수 로그 기록
+            return ResponseEntity.ok(stores); // 가게 목록 반환
         } catch (Exception e) {
-            logger.error("Error retrieving stores", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            logger.error("Error retrieving stores", e); // 에러 로그 기록
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build(); // 서버 에러 응답
         }
     }
 
-    //입력받은 상품 input DB로 넣기
+    // 입력받은 상품을 DB에 저장
     @PostMapping("/menu")
     public ResponseEntity<?> createMenu(@RequestBody MenuDTO menuDTO) {
-        logger.info("Received menu data: {}", menuDTO);
+        logger.info("Received menu data: {}", menuDTO); // 입력받은 메뉴 데이터 로그 기록
         try {
-            MenuIds ids = menuService.saveMenuAndGetIds(menuDTO);
-            int menuId = ids.getMenuId();
-            int storeId = ids.getStoreId();
-            logger.info("Saved menu with ID: {}, for store ID: {}", menuId, storeId);
+            MenuIds ids = menuService.saveMenuAndGetIds(menuDTO); // 메뉴 저장 및 ID 반환
+            int menuId = ids.getMenuId(); // 메뉴 ID 추출
+            int storeId = ids.getStoreId(); // 가게 ID 추출
+            logger.info("Saved menu with ID: {}, for store ID: {}", menuId, storeId); // 저장된 메뉴 로그 기록
 
-            String ingredients = menuDTO.getMenuIngredients();
-            menuIngredientService.addIngredients(menuId, ingredients);
-            logger.info("Added ingredients for menu ID: {}", menuId);
+            String ingredients = menuDTO.getMenuIngredients(); // 메뉴 재료 추출
+            menuIngredientService.addIngredients(menuId, ingredients); // 재료 추가
+            logger.info("Added ingredients for menu ID: {}", menuId); // 재료 추가 로그 기록
 
-            inventoryService.addInventory(menuId, storeId, menuDTO.getQuantity());
+            inventoryService.addInventory(menuId, storeId, menuDTO.getQuantity()); // 재고 추가
             logger.info("Added inventory for menu ID: {}, store ID: {}, quantity: {}",
-                    menuId, storeId, menuDTO.getQuantity());
+                    menuId, storeId, menuDTO.getQuantity()); // 재고 추가 로그 기록
 
             return ResponseEntity.status(HttpStatus.CREATED)
-                    .body("메뉴가 성공적으로 등록되었습니다.");
+                    .body("메뉴가 성공적으로 등록되었습니다."); // 성공 메시지 반환
         } catch (Exception e) {
-            logger.error("Error creating menu", e);
+            logger.error("Error creating menu", e); // 에러 로그 기록
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("메뉴 등록 중 오류가 발생했습니다: " + e.getMessage());
+                    .body("메뉴 등록 중 오류가 발생했습니다: " + e.getMessage()); // 에러 메시지 반환
         }
     }
 
-
-    // 가게의 Id로 가게들의 정보를 가져옴
+    // 가게 ID로 해당 가게의 재고 정보를 조회
     @GetMapping("/inventory/{storeId}")
     public ResponseEntity<List<InventoryMenuDTO>> getInventoryByStoreId(@PathVariable int storeId) {
         try {
-            List<InventoryMenuDTO> inventoryMenu = inventoryService.findInventoryMenuByStoreId(storeId);
-            logger.info("Retrieved inventory for store ID: {}", storeId);
-            return ResponseEntity.ok(inventoryMenu);
+            List<InventoryMenuDTO> inventoryMenu = inventoryService.findInventoryMenuByStoreId(storeId); // 재고 조회
+            logger.info("Retrieved inventory for store ID: {}", storeId); // 조회된 재고 로그 기록
+            return ResponseEntity.ok(inventoryMenu); // 재고 목록 반환
         } catch (Exception e) {
-            logger.error("Error fetching inventory for store ID: " + storeId, e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Collections.emptyList());
+            logger.error("Error fetching inventory for store ID: " + storeId, e); // 에러 로그 기록
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Collections.emptyList()); // 에러 응답
         }
     }
 
-    // 밀키트의 수량을 업데이트함
+    // 밀키트의 수량 업데이트
     @PutMapping("/inventory/{storeId}/{menuId}")
     public ResponseEntity<?> updateInventoryByQuantity(
-            @PathVariable int storeId,
-            @PathVariable int menuId,
-            @RequestBody QuantityUpdateRequest request) {
+            @PathVariable int storeId, // 매개변수로 가져온 storeId를 int 타입의 storeId 객체에 담음
+            @PathVariable int menuId, // 매개변수로 가져온 menuId를 int 타입의 menuId 객체에 담음
+            @RequestBody QuantityUpdateRequest request) { // 매개변수로 가져온 request를 QuantityUpdateRequest 객체에 담음
         try {
-
-            System.out.println("storeId: " + storeId + ", menuId: " + menuId + ", quantity: " + request.getQuantity());
-            Inventory updatedInventory = inventoryService.updateInventoryQuantity(menuId, storeId, request.getQuantity());
-            return ResponseEntity.ok(updatedInventory);
+            System.out.println("storeId: " + storeId + ", menuId: " + menuId + ", quantity: " + request.getQuantity()); // 수량 업데이트 정보 출력
+            Inventory updatedInventory = inventoryService.updateInventoryQuantity(menuId, storeId, request.getQuantity()); // 재고 수량 업데이트
+            return ResponseEntity.ok(updatedInventory); // 업데이트된 재고 반환
         } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage()); // 찾을 수 없음 에러 응답
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("수량 업데이트 중 오류 발생: " + e.getMessage());
+                    .body("수량 업데이트 중 오류 발생: " + e.getMessage()); // 서버 에러 응답
         }
     }
 }

@@ -1,6 +1,5 @@
 package com.example.bechef.controller.member;
 
-
 import com.example.bechef.dto.ApiResponse;
 import com.example.bechef.model.member.Member;
 import com.example.bechef.repository.member.MemberRepository;
@@ -59,43 +58,39 @@ public class MemberController {
     // 회원가입
     @PostMapping("/register")
     public ResponseEntity<ApiResponse> registerMember(@RequestBody Member member) {
-
         // 비밀번호를 암호화하여 설정
         member.setPwd(passwordEncoder.encode(member.getPwd()));
 
-        //아이디 공백검사
+        // 아이디 공백검사
         if (member.getId() == null || member.getId().trim().isEmpty()) {
             throw new IllegalArgumentException("아이디는 필수입니다.");
         }
 
-        //아이디 중복검사 and 회원가입
+        // 아이디 중복검사 및 회원가입
         boolean isDuplicate = memberService.isIdDuplicate(member.getId());
 
         ApiResponse apiResponse;
-        if(isDuplicate){
+        if (isDuplicate) {
             apiResponse = new ApiResponse(
                     ResponseStatus.ERROR,
                     "이미 사용중인 아이디입니다.",
                     isDuplicate
             );
             return ResponseEntity.ok(apiResponse);
-        }else {
-            memberRepository.save(member);
+        } else {
+            memberRepository.save(member); // 회원 정보를 저장
             apiResponse = new ApiResponse(
                     ResponseStatus.SUCCESS,
-                            "사용 가능한 아이디입니다. 회원가입이 완료되었습니다.",
-                            isDuplicate
-                            );
+                    "사용 가능한 아이디입니다. 회원가입이 완료되었습니다.",
+                    isDuplicate
+            );
             return ResponseEntity.ok(apiResponse);
         }
-}
-
-
+    }
 
     // 로그인
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<Map<String, String>>> login(@RequestBody Member member) {
-
         try {
             // 사용자 정보 로드
             UserDetails userDetails = memberDetailService.loadUserByUsername(member.getId());
@@ -104,13 +99,14 @@ public class MemberController {
             if (userDetails == null || !passwordEncoder.matches(member.getPwd(), userDetails.getPassword())) {
                 throw new BadCredentialsException("아이디와 비밀번호가 일치하지 않습니다.");
             }
+
             // 인증된 사용자 정보 조회
             Member authenticatedMember = memberService.findById(member.getId());
-            System.out.println("로그인한 사용자의 데이터 >>>>>>>>>>>>>>>>>>>>" + authenticatedMember);
+            System.out.println("로그인한 사용자의 데이터 >>>>>>>>>>>>>>>>>>>>" + authenticatedMember); // 로그인한 사용자의 데이터를 확인하기 위해 출력
 
             // JWT 토큰 생성 (역할 정보 포함)
             String token = JwtUtil.generateToken(authenticatedMember);
-            System.out.println("생성된 JWT 토큰 >>>>>>>>>>>>>>>>>>>>" + token);
+            System.out.println("생성된 JWT 토큰 >>>>>>>>>>>>>>>>>>>>" + token); // 생성된 JWT 토큰을 확인하기 위해 출력
 
             // HTTP 헤더 설정
             HttpHeaders httpHeaders = new HttpHeaders();
@@ -124,14 +120,13 @@ public class MemberController {
             // 응답 데이터 구성
             Map<String, String> tokenMap = new HashMap<>();
             tokenMap.put("token", token);
-            System.out.println("Response Headers: " + httpHeaders);
-
+            System.out.println("Response Headers: " + httpHeaders); // 응답 헤더를 확인하기 위해 출력
 
             ApiResponse<Map<String, String>> apiResponse = new ApiResponse<>(ResponseStatus.SUCCESS, "로그인 성공", tokenMap);
             return ResponseEntity.ok().headers(httpHeaders).body(apiResponse);
 
         } catch (UsernameNotFoundException | BadCredentialsException e) {
-            System.out.println("로그인 실패: " + e.getMessage());
+            System.out.println("로그인 실패: " + e.getMessage()); // 로그인 실패 메시지 출력
             ApiResponse<Map<String, String>> apiResponse = new ApiResponse<>(ResponseStatus.UNAUTHORIZED, "로그인 실패", null);
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(apiResponse);
         }
@@ -141,19 +136,19 @@ public class MemberController {
     @DeleteMapping
     public ResponseEntity<?> deleteMember(@RequestHeader("Authorization") String authorizationHeader) {
         if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
-            return ResponseEntity.status(401).body("Authorization header is invalid");
+            return ResponseEntity.status(401).body("Authorization header is invalid"); // 유효하지 않은 인증 헤더
         }
 
-        String token = authorizationHeader.substring(7);
+        String token = authorizationHeader.substring(7); // 'Bearer ' 부분 제거
         if (!jwtUtil.validToken(token)) {
-            return ResponseEntity.status(401).body("Token is invalid");
+            return ResponseEntity.status(401).body("Token is invalid"); // 유효하지 않은 토큰
         }
 
-        Claims claims = jwtUtil.extractToken(token);
-        String memberId = claims.get("id", String.class);
+        Claims claims = jwtUtil.extractToken(token); // 토큰에서 클레임 추출
+        String memberId = claims.get("id", String.class); // 클레임에서 사용자 ID 추출
 
-        memberService.deleteUserById(memberId);
+        memberService.deleteUserById(memberId); // 사용자 ID를 기반으로 회원 삭제
 
-        return ResponseEntity.ok("회원 탈퇴가 완료되었습니다.");
+        return ResponseEntity.ok("회원 탈퇴가 완료되었습니다."); // 성공 메시지 반환
     }
 }

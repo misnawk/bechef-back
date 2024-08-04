@@ -27,16 +27,7 @@ public class MemberServiceImpl implements MemberService {
     @Autowired
     private StoreService storeService;
 
-    //회원가입
-    @Override
-    public void saveUser(Member member) {
-        // 회원의 역할이 지정되지 않은 경우 기본 역할을 USER로 설정
-        if(member.getRole() == null){
-            member.setRole(Role.USER);
-        }
-        // 회원 정보를 저장
-        memberRepository.save(member);
-    }
+
 
     //아이디로 유저 데이터 검색
     @Override
@@ -49,13 +40,6 @@ public class MemberServiceImpl implements MemberService {
         return memberRepository.existsById(id);
     }
 
-    @Override
-    public Member registerNewMember(Member member) {
-        if (isIdDuplicate(member.getId())){
-            throw new IllegalArgumentException("이미 사용중인 아이디입니다.");
-        }
-        return memberRepository.save(member);
-    }
 
 
 
