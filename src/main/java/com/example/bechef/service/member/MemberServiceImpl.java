@@ -35,6 +35,7 @@ public class MemberServiceImpl implements MemberService {
         return memberRepository.findById(id);
     }
 
+    // 아이디중복검사
     @Override
     public boolean isIdDuplicate(String id) {
         return memberRepository.existsById(id);

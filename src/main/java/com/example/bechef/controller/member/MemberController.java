@@ -2,6 +2,7 @@ package com.example.bechef.controller.member;
 
 import com.example.bechef.dto.ApiResponse;
 import com.example.bechef.model.member.Member;
+import com.example.bechef.model.member.Role;
 import com.example.bechef.repository.member.MemberRepository;
 import com.example.bechef.service.member.MemberDetailServiceImpl;
 import com.example.bechef.service.member.MemberService;
@@ -66,6 +67,9 @@ public class MemberController {
             throw new IllegalArgumentException("아이디는 필수입니다.");
         }
 
+        // 기본 역할을 'USER'로 설정
+        member.setRole(Role.USER);  // 이 부분을 추가
+
         // 아이디 중복검사 및 회원가입
         boolean isDuplicate = memberService.isIdDuplicate(member.getId());
 
@@ -81,7 +85,7 @@ public class MemberController {
             memberRepository.save(member); // 회원 정보를 저장
             apiResponse = new ApiResponse(
                     ResponseStatus.SUCCESS,
-                    "사용 가능한 아이디입니다. 회원가입이 완료되었습니다.",
+                    "회원가입이 완료되었습니다.",
                     isDuplicate
             );
             return ResponseEntity.ok(apiResponse);
